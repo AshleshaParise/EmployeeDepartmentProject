@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cla.employeeportaldemo.dto.EmployeeDTO;
 import com.cla.employeeportaldemo.entity.Employee;
 import com.cla.employeeportaldemo.repository.EmployeeRepository;
+import com.cla.employeeportaldemo.service.CacheService;
 import com.cla.employeeportaldemo.service.EmployeeService;
 
 
@@ -36,6 +37,9 @@ public class EmployeeController
 	 @Autowired
 	 EmployeeRepository employeeRepository;
 	 
+	 @Autowired
+	 CacheService cacheService;
+	 
 	 private static final Logger logger = LogManager.getLogger(EmployeeController.class);
 	 
 	 @Autowired
@@ -49,8 +53,19 @@ public class EmployeeController
 	 public List<EmployeeDTO> findAllEmployees() 
 	 {	
 		    logger.info("Getting All Employee");
+			/*
+			 * cacheService.evictAllCaches(); cacheService.evictAllcachesAtIntervals();
+			 */
+			System.out.println("Running Thread  "+Thread.currentThread().getName());
 	        return employeeService.findAll();
 	 }
+	 
+	 @GetMapping("/employee/{employeeId}")
+	 public EmployeeDTO findEmployeeDetails(@PathVariable(name="employeeId") Integer employeeId)
+	 {
+			return employeeService.findEmployee(employeeId);
+	 } 
+	 
 	 
 	 @PostMapping("/employee")
 	 public ResponseEntity<EmployeeDTO> addEmployee(@RequestBody EmployeeDTO employeeDTO )

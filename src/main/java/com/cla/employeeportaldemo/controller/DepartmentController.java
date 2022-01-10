@@ -1,6 +1,8 @@
 package com.cla.employeeportaldemo.controller;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,11 +42,20 @@ public class DepartmentController
 	        return departmentService.findAll();
 	 }
 	 
+	 @GetMapping("/department/{departmentId}")
+	 public DepartmentDTO findEmployeeDetails(@PathVariable(name="departmentId") Integer departmentId) throws InterruptedException
+	 {
+		    System.out.println("Department Controller Thread:  "+Thread.currentThread().getName());
+			return departmentService.findDepartment(departmentId);
+	 } 
+	 
+	 
 	 
 	 @PostMapping("/department")
-	 public ResponseEntity<DepartmentDTO> addEmployee(@RequestBody DepartmentDTO departmentDTO )
+	 public ResponseEntity<DepartmentDTO> addDepartment(@RequestBody DepartmentDTO departmentDTO )
 	 {
-		 DepartmentDTO deptDto=departmentService.addDepartment(departmentDTO);
+		    DepartmentDTO deptDto=departmentService.addDepartment(departmentDTO);
+			System.out.println("Running Thread addDepartment  "+Thread.currentThread().getName());
 			return new ResponseEntity<>(deptDto,HttpStatus.CREATED);
 			
 	 } 
@@ -59,9 +70,9 @@ public class DepartmentController
 	 
 	 @DeleteMapping("/department/{departmentId}")
 	 public ResponseEntity<String> deleteDepartment(@PathVariable(name="departmentId") Integer departmentId)
-		{
+	 {
 			departmentService.deleteDepartment(departmentId);
 			return new ResponseEntity<>("Deleted",HttpStatus.OK);
-		} 
+	 } 
 
 }

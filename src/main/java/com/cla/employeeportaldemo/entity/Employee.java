@@ -52,7 +52,7 @@ public class Employee implements Serializable{
 	@Column(name="EMP_SALARY")
 	private Integer employeeSalary;
 	
-	@OneToMany( cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "EMP_ID")
     private List<EmployeeDepartment> employeeDepartment;
 

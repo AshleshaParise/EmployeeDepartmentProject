@@ -6,14 +6,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.cla.employeeportaldemo.dto.EmployeeDTO;
@@ -21,6 +26,7 @@ import com.cla.employeeportaldemo.dto.EmployeeDepartmentDTO;
 import com.cla.employeeportaldemo.entity.Department;
 import com.cla.employeeportaldemo.entity.Employee;
 import com.cla.employeeportaldemo.entity.EmployeeDepartment;
+import com.cla.employeeportaldemo.exception.IDNotFoundException;
 import com.cla.employeeportaldemo.repository.DepartmentRepository;
 import com.cla.employeeportaldemo.repository.EmployeeDepartmentRepository;
 import com.cla.employeeportaldemo.repository.EmployeeRepository;
@@ -36,10 +42,9 @@ public class EmployeeServiceImpl implements EmployeeService
 	 private DepartmentRepository departmentRepository;
 	 @Autowired
 	 private EmployeeDepartmentRepository employeeDepartmentRepository;
-
-	
+	 
 	 @Override
-	 @Cacheable(cacheNames = "employeeCache")
+	// @Cacheable(value = "employeeCache")
 	 public List<EmployeeDTO> findAll() 
 	 {
 		List<EmployeeDTO> employeeDTO = new ArrayList<>();
@@ -54,7 +59,6 @@ public class EmployeeServiceImpl implements EmployeeService
 	 
 	 @Transactional
 	 @Override
-	 @CachePut(cacheNames ="employeeCache")
 	 public EmployeeDTO addEmployee(EmployeeDTO employeeDTO) 
 	 {	
 		 Employee employee = new Employee();
@@ -67,10 +71,13 @@ public class EmployeeServiceImpl implements EmployeeService
 	 @Transactional
 	 @Override
 	 @CachePut(cacheNames ="employeeCache",key="#empId")
-	 public EmployeeDTO updateEmployee(Integer empId, EmployeeDTO employeeDTO) 
+	 public EmployeeDTO updateEmployee(Integer empId, EmployeeDTO employeeDTO)
 	 {
-		 Employee employee = employeeRepository.findByEmployeeId(empId);		 
-		 Employee emp = employeeRepository.save(mapDtoToEntity(employeeDTO, employee));
+		 Employee employee = employeeRepository.findByEmployeeId(empId);
+		 if(employee==null) {
+				throw new IDNotFoundException("Employee id not found  "+ empId);
+			}
+		 Employee emp = employeeRepository.save(mapDtoToEntityUpdate(employeeDTO, employee));
 		 System.out.println("Fetching data from database");
 		 return mapEntityToDto(emp);
 	 }
@@ -78,22 +85,35 @@ public class EmployeeServiceImpl implements EmployeeService
 	 @Transactional
 	 @Override
 	 @CacheEvict(cacheNames ="employeeCache",key="#empId")
-	 public void deleteEmployee(Integer empId) 
+	 public void deleteEmployee(Integer empId)
 	 {
-		 Employee employee=employeeRepository.findByEmployeeId(empId);			
-			  try 
-			  {
-			  
+		    
+		      Employee employee=employeeRepository.findByEmployeeId(empId);	
+		      if(employee==null) {
+					throw new IDNotFoundException("Employee id not found  "+ empId);
+				}
 			  EmployeeDepartment emdt=employeeDepartmentRepository.getById(empId);
 			  employeeDepartmentRepository.delete(emdt);
-			  employeeRepository.delete(employee); 
-			  } 
-			  catch (Exception e) 
-			  {
-			 		  
-			  }
+			  employeeRepository.delete(employee);			
 			 
 	 }
+	 
+	 @Override
+	 @Cacheable(cacheNames = "employeeCache",key="#employeeId")
+	 public EmployeeDTO findEmployee(Integer employeeId) 
+	 {
+		  
+	      Employee employee=employeeRepository.findByEmployeeId(employeeId);	
+	      if(employee==null) 
+	      {
+				throw new IDNotFoundException("Employee id not found  "+ employeeId);
+		  }
+	      EmployeeDTO empdto = mapEntityToDto(employee);
+		  System.out.println("Fetching data from database");
+
+		  return empdto;
+	 }
+	 
 		  
 	
 	  private Employee mapDtoToEntity(EmployeeDTO employeeDTO, Employee employee) 
@@ -115,6 +135,32 @@ public class EmployeeServiceImpl implements EmployeeService
 			  empDept.setEmployee(employee); 
 			  empDept.setDepartment(d);
 			  employee.addEmployeeDepartment(empDept); 
+			  //employeeDepartmentRepository.save(empDept);
+			  }
+			 
+			return employee;
+			
+	  }
+	  private Employee mapDtoToEntityUpdate(EmployeeDTO employeeDTO, Employee employee) 
+	  {
+		    employee.setEmployeeName(employeeDTO.getEmployeeName());
+			employee.setEmployeeId(employeeDTO.getEmployeeId());
+			employee.setEmployeePhone(employeeDTO.getEmployeePhone());
+			employee.setEmployeeAddress(employeeDTO.getEmployeeAddress());
+			employee.setEmployeeDesignation(employeeDTO.getEmployeeDesignation());
+			employee.setEmployeeSalary(employeeDTO.getEmployeeSalary());
+			
+			EmployeeDepartment empDept = new EmployeeDepartment();
+
+			
+			  List<Department> dept=employeeDTO.getDepartment();
+			  
+			  for(Department d:dept) {
+			  
+			  empDept.setEmployee(employee); 
+			  empDept.setDepartment(d);
+			  //employee.addEmployeeDepartment(empDept); 
+			  //employeeDepartmentRepository.save(empDept);
 			  }
 			 
 			return employee;
@@ -137,5 +183,7 @@ public class EmployeeServiceImpl implements EmployeeService
 		 empdto.setDepartment(employee.getEmployeeDepartment().stream().map(ed->ed.getDepartment()).collect(Collectors.toList()));
 		 return empdto;
 	  }
+
+	
 	 
 }

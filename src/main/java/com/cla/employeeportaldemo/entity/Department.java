@@ -1,5 +1,6 @@
 package com.cla.employeeportaldemo.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +26,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name="DEPARTMENT")
-public class Department  {
+public class Department implements Serializable  {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

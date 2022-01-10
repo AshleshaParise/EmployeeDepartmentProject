@@ -16,5 +16,6 @@ public interface EmployeeService
 	public EmployeeDTO updateEmployee(Integer empId, EmployeeDTO employeeDTO);
 	
 	public void deleteEmployee(Integer empId);
-
+	
+	public EmployeeDTO findEmployee(Integer employeeId);
 }
