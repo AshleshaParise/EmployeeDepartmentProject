@@ -44,7 +44,7 @@ public class EmployeeServiceImpl implements EmployeeService
 	 private EmployeeDepartmentRepository employeeDepartmentRepository;
 	 
 	 @Override
-	// @Cacheable(value = "employeeCache")
+	// @Cacheable(value = "employeeCache",key="#EmployeeDTO.employeeId", condition="#employeeId!=null")
 	 public List<EmployeeDTO> findAll() 
 	 {
 		List<EmployeeDTO> employeeDTO = new ArrayList<>();
@@ -59,6 +59,7 @@ public class EmployeeServiceImpl implements EmployeeService
 	 
 	 @Transactional
 	 @Override
+	 @Cacheable(value = "employeeCache",key="#EmployeeDTO.employeeId", condition="#employeeId!=null")
 	 public EmployeeDTO addEmployee(EmployeeDTO employeeDTO) 
 	 {	
 		 Employee employee = new Employee();

@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.internal.build.AllowSysOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.cla.employeeportaldemo.dto.DepartmentDTO;
 import com.cla.employeeportaldemo.dto.EmployeeDTO;
+import com.cla.employeeportaldemo.exception.AsyncExceptionHandler;
+import com.cla.employeeportaldemo.repository.DepartmentRepository;
 import com.cla.employeeportaldemo.repository.EmployeeRepository;
 import com.cla.employeeportaldemo.service.DepartmentService;
 import com.cla.employeeportaldemo.service.EmployeeService;
@@ -34,6 +38,15 @@ public class DepartmentController
 	 @Autowired
 	 EmployeeRepository employeeRepository;
 	 
+	 @Autowired
+	 private DepartmentRepository departmentRepository;
+	 
+	 @Autowired
+	 private AsyncExceptionHandler asyncExceptionHandler;
+	 
+	 @Autowired
+	 RestTemplate restTemplate;
+	 
 	 private static final Logger logger = LogManager.getLogger(EmployeeController.class);
 	 
 	 @GetMapping("/department")
@@ -43,10 +56,17 @@ public class DepartmentController
 	 }
 	 
 	 @GetMapping("/department/{departmentId}")
-	 public DepartmentDTO findEmployeeDetails(@PathVariable(name="departmentId") Integer departmentId) throws InterruptedException
+	 public ResponseEntity<String>  findEmployeeDetails(@PathVariable(name="departmentId") Integer departmentId) throws InterruptedException
 	 {
 		    System.out.println("Department Controller Thread:  "+Thread.currentThread().getName());
-			return departmentService.findDepartment(departmentId);
+		    if( departmentRepository.findByDepartmentId(departmentId)!= null) {
+		    	DepartmentDTO departmentdto=departmentService.findDepartment(departmentId);
+		    	return new ResponseEntity<>("Id found",HttpStatus.OK);
+		    }
+		    else 
+		    	return new ResponseEntity<>("Id not found",HttpStatus.BAD_REQUEST);
+		    
+			
 	 } 
 	 
 	 
@@ -74,5 +94,5 @@ public class DepartmentController
 			departmentService.deleteDepartment(departmentId);
 			return new ResponseEntity<>("Deleted",HttpStatus.OK);
 	 } 
-
+	 
 }

@@ -104,12 +104,13 @@ public class DepartmentServiceImpl implements DepartmentService
 	{	
 		  
 		  Department department=departmentRepository.findByDepartmentId(departmentId);
+	      Thread.sleep(5000);
+
 		 
 	      if(department==null) 
 	      {
 				throw new IDNotFoundException("Department id not found  "+ departmentId);
 		  }
-	      Thread.sleep(5000);
 	      DepartmentDTO deptdto = mapEntityToDto(department);
 	      logger.info("Fetching data from database");
 	      logger.info("Thread Name of Department Service:  "+Thread.currentThread().getName());
