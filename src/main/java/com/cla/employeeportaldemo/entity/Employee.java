@@ -69,8 +69,7 @@ public class Employee implements Serializable{
 	{
 		return "Employee [employeeId=" + employeeId + ", employeeName=" + employeeName + ", employeePhone="
 				+ employeePhone + ", employeeAddress=" + employeeAddress + ", employeeDesignation="
-				+ employeeDesignation + ", employeeSalary=" + employeeSalary + ", employeeDepartment="
-				+ employeeDepartment + "]";
+				+ employeeDesignation + ", employeeSalary=" + employeeSalary;
 	}
 	
 	
